@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Reports for {{ year }}{% endblock %}
+
+{% block content %}
+<h1>Reports for {{ year }}</h1>
+
+{% for report in report_list %}
+    <p>{{ report.title }}</p>
+    <p>Published: {{ report.pub_date|date:"F j, Y" }}</p>
+    <p>Headline: {{ report.headline }}</p>
+    <p>Content: {{ report.content }}</p>
+<br />
+{% endfor %}
+{% endblock %}

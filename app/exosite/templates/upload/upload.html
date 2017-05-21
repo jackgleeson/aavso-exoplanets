@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Page{% endblock %}
+
+{% block content %}
+<h1>Upload Here</h1>
+
+<form action="/upload" enctype="multipart/form-data" method="post">
+    <label for="image"> Select an image to upload</label>
+    <br />
+    <input type="file" name="image" value="file" id="image">
+    <br/>
+    <br/>
+    <label for="report"> Select a report to upload</label>
+    <br />
+    <input type="file" name="report" value="file" id="report">
+    <br/>
+    <br/>
+    <input type="submit" value="submit">
+    {% csrf_token %}
+</form>
+
+{% endblock %}
