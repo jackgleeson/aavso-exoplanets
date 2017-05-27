@@ -16,8 +16,6 @@ class Report(models.Model):
     def __str__(self):
         return self.title
 
-
-
 class ExoplanetExoData(models.Model):
     jd_utc = models.DecimalField(db_column='JD_UTC', max_digits=13, decimal_places=6, blank=True, null=True)  # Field name made lowercase.
     hjd_utc = models.DecimalField(db_column='HJD_UTC', max_digits=13, decimal_places=6, blank=True, null=True)  # Field name made lowercase.
@@ -34,7 +32,6 @@ class ExoplanetExoData(models.Model):
     class Meta:
         managed = True
         db_table = 'exoplanet.exo_data'
-
 
 class ExoplanetExoObservation(models.Model):
     auid = models.CharField(db_column='AUID', max_length=11, blank=True, null=True)  # Field name made lowercase.
