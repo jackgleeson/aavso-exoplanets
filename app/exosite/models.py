@@ -1,10 +1,37 @@
-
 # TODO:
 #   * Make sure each ForeignKey has `on_delete` set to the desired behavior.
 
 from __future__ import unicode_literals
 
 from django.db import models
+from astropy.io import ascii
+
+
+class AsciiFileReportParser:
+    def __init__(self, raw_report):
+        self.ascii_report = self._convert_to_ascii_table(raw_report)
+        self.properties = self._extract_properties_from_report()
+        self.headers = self._extract_headers_from_reports()
+
+    def get_properties(self):
+        return self.properties
+
+    def get_headers(self):
+        return self.headers
+
+    def _convert_to_ascii_table(self, report):
+        ascii_report = ascii.read(report, format='no_header', delimiter="\s", comment="#", data_start=0)
+        return ascii_report
+
+    def _extract_properties_from_report(self):
+        properties = {}
+        for i in self.ascii_report.meta['comments'][:-1]:
+            properties[i.split("=")[0]] = i.split("=")[1]
+        return properties
+
+    def _extract_headers_from_reports(self):
+        report_headers = self.ascii_report.meta['comments'][-1].split()
+        return report_headers
 
 
 class Report(models.Model):
@@ -16,10 +43,14 @@ class Report(models.Model):
     def __str__(self):
         return self.title
 
+
 class ExoplanetExoData(models.Model):
-    jd_utc = models.DecimalField(db_column='JD_UTC', max_digits=13, decimal_places=6, blank=True, null=True)  # Field name made lowercase.
-    hjd_utc = models.DecimalField(db_column='HJD_UTC', max_digits=13, decimal_places=6, blank=True, null=True)  # Field name made lowercase.
-    bjd_tdb = models.DecimalField(db_column='BJD_TDB', max_digits=13, decimal_places=6, blank=True, null=True)  # Field name made lowercase.
+    jd_utc = models.DecimalField(db_column='JD_UTC', max_digits=13, decimal_places=6, blank=True,
+                                 null=True)  # Field name made lowercase.
+    hjd_utc = models.DecimalField(db_column='HJD_UTC', max_digits=13, decimal_places=6, blank=True,
+                                  null=True)  # Field name made lowercase.
+    bjd_tdb = models.DecimalField(db_column='BJD_TDB', max_digits=13, decimal_places=6, blank=True,
+                                  null=True)  # Field name made lowercase.
     differential_magnitude = models.DecimalField(max_digits=8, decimal_places=6, blank=True, null=True)
     mag_uncertainty = models.DecimalField(max_digits=8, decimal_places=6, blank=True, null=True)
     detrend_1 = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
@@ -27,11 +58,13 @@ class ExoplanetExoData(models.Model):
     detrend_3 = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
     detrend_4 = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
     added_date = models.DecimalField(max_digits=13, decimal_places=6, blank=True, null=True)
-    exoplanet_exo_observation = models.ForeignKey('ExoplanetExoObservation', models.DO_NOTHING, db_column='exoplanet.exo_observation_id')  # Field renamed to remove unsuitable characters.
+    exoplanet_exo_observation = models.ForeignKey('ExoplanetExoObservation', models.DO_NOTHING,
+                                                  db_column='exoplanet.exo_observation_id')  # Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = True
         db_table = 'exoplanet.exo_data'
+
 
 class ExoplanetExoObservation(models.Model):
     auid = models.CharField(db_column='AUID', max_length=11, blank=True, null=True)  # Field name made lowercase.
@@ -56,9 +89,12 @@ class ExoplanetExoObservation(models.Model):
     valflag = models.CharField(max_length=1, blank=True, null=True)
     group = models.IntegerField(blank=True, null=True)
     added_date = models.DecimalField(max_digits=13, decimal_places=6, blank=True, null=True)
-    web_djanjo_hq_person_site = models.ForeignKey('WebDjanjoHqPersonSite', models.DO_NOTHING, db_column='web_djanjo.hq_person_site_id')  # Field renamed to remove unsuitable characters.
-    web_django_hq_person_equipment = models.ForeignKey('WebDjangoHqPersonEquipment', models.DO_NOTHING, db_column='web-django.hq_person_equipment_id')  # Field renamed to remove unsuitable characters.
-    exoplanet_names = models.ForeignKey('ExoplanetNames', models.DO_NOTHING, db_column='exoplanet.names_id')  # Field renamed to remove unsuitable characters.
+    web_djanjo_hq_person_site = models.ForeignKey('WebDjanjoHqPersonSite', models.DO_NOTHING,
+                                                  db_column='web_djanjo.hq_person_site_id')  # Field renamed to remove unsuitable characters.
+    web_django_hq_person_equipment = models.ForeignKey('WebDjangoHqPersonEquipment', models.DO_NOTHING,
+                                                       db_column='web-django.hq_person_equipment_id')  # Field renamed to remove unsuitable characters.
+    exoplanet_names = models.ForeignKey('ExoplanetNames', models.DO_NOTHING,
+                                        db_column='exoplanet.names_id')  # Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = True
@@ -81,8 +117,10 @@ class ExoplanetNames(models.Model):
 class ExoplanetSecondaryObscodeLink(models.Model):
     obscode = models.CharField(max_length=5, blank=True, null=True)
     added_date = models.DecimalField(max_digits=13, decimal_places=6, blank=True, null=True)
-    exoplanet_exo_observation = models.ForeignKey(ExoplanetExoObservation, models.DO_NOTHING, db_column='exoplanet.exo_observation_id')  # Field renamed to remove unsuitable characters.
-    web_djanjo_hq_person = models.ForeignKey('WebDjanjoHqPerson', models.DO_NOTHING, db_column='web_djanjo.hq_person_id')  # Field renamed to remove unsuitable characters.
+    exoplanet_exo_observation = models.ForeignKey(ExoplanetExoObservation, models.DO_NOTHING,
+                                                  db_column='exoplanet.exo_observation_id')  # Field renamed to remove unsuitable characters.
+    web_djanjo_hq_person = models.ForeignKey('WebDjanjoHqPerson', models.DO_NOTHING,
+                                             db_column='web_djanjo.hq_person_id')  # Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = True
@@ -92,7 +130,8 @@ class ExoplanetSecondaryObscodeLink(models.Model):
 class ExoplanetSecondaryStarLink(models.Model):
     auid = models.CharField(db_column='AUID', max_length=11, blank=True, null=True)  # Field name made lowercase.
     added_date = models.DecimalField(max_digits=13, decimal_places=6, blank=True, null=True)
-    exoplanet_exo_observation = models.ForeignKey(ExoplanetExoObservation, models.DO_NOTHING, db_column='exoplanet.exo_observation_id')  # Field renamed to remove unsuitable characters.
+    exoplanet_exo_observation = models.ForeignKey(ExoplanetExoObservation, models.DO_NOTHING,
+                                                  db_column='exoplanet.exo_observation_id')  # Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = True
@@ -118,7 +157,8 @@ class WebDjangoHqPersonEquipment(models.Model):
     y_photosite_size = models.DecimalField(max_digits=3, decimal_places=1, blank=True, null=True)
     obsolete = models.IntegerField(blank=True, null=True)
     added_date = models.DateTimeField(blank=True, null=True)
-    web_djanjo_hq_person = models.ForeignKey('WebDjanjoHqPerson', models.DO_NOTHING, db_column='web_djanjo.hq_person_id')  # Field renamed to remove unsuitable characters.
+    web_djanjo_hq_person = models.ForeignKey('WebDjanjoHqPerson', models.DO_NOTHING,
+                                             db_column='web_djanjo.hq_person_id')  # Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = True
@@ -141,7 +181,8 @@ class WebDjanjoHqPersonSite(models.Model):
     sitealt = models.IntegerField(blank=True, null=True)
     obsolete = models.IntegerField(blank=True, null=True)
     added_date = models.DateTimeField(blank=True, null=True)
-    web_djanjo_hq_person = models.ForeignKey(WebDjanjoHqPerson, models.DO_NOTHING, db_column='web_djanjo.hq_person_id')  # Field renamed to remove unsuitable characters.
+    web_djanjo_hq_person = models.ForeignKey(WebDjanjoHqPerson, models.DO_NOTHING,
+                                             db_column='web_djanjo.hq_person_id')  # Field renamed to remove unsuitable characters.
 
     class Meta:
         managed = True

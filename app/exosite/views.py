@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from .forms import UploadFileForm
 from .models import *
-from astropy.io import ascii
+
 import pprint
 
 
@@ -23,25 +23,13 @@ def upload_file(request):
                 for chunk in f.chunks():
                     destination.write(chunk)
 
-            # load file
+            # load report file
             file_data = request.FILES['report'].read().decode()  # this needs to be chunked
 
-            # parse into ascii table
-            report_table = ascii.read(file_data, format='no_header', delimiter="\s", comment="#", data_start=0)
+            # process ascii table
+            ascii_report = AsciiFileReportParser(file_data)
 
-            # extract and set report headers
-            report_headers = report_table.meta['comments'][-1].split()
-            for index, header in enumerate(report_headers):
-                report_table["col" + str(1 + index)].name = header
-
-            # extract report properties
-            report_properties = {}
-            for i in report_table.meta['comments'][:-1]:
-                report_properties[i.split("=")[0]] = i.split("=")[1]
-
-            # exo_report = ExoReport(report_properties, report_table)
-
-            return HttpResponse(pprint.pformat(report_table))
+            return HttpResponse(pprint.pformat(ascii_report.get_properties()))
             # return HttpResponseRedirect('/upload/success')
         else:
             return HttpResponse(pprint.pformat(form.errors))
