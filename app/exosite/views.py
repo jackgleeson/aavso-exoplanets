@@ -17,19 +17,17 @@ def upload_file(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
 
-            # save image file
             f = request.FILES['image']
             with open('../files/' + f.name, 'wb+') as destination:
                 for chunk in f.chunks():
                     destination.write(chunk)
 
-            # load report file
-            file_data = request.FILES['report'].read().decode()  # this needs to be chunked
+            file_data = request.FILES['report'].read().decode()
+            mapper = AsciiReportMapper(AsciiReport(file_data),ExoReportComposite())
+            mapper.map_from_ascii_report_to_exo_report()
+            mapper.get_exo_report()
 
-            # process ascii table
-            ascii_report = AsciiFileReportParser(file_data)
-
-            return HttpResponse(pprint.pformat(ascii_report.get_properties()))
+            return HttpResponse(pprint.pformat(mapper.ascii_report.get_properties()))
             # return HttpResponseRedirect('/upload/success')
         else:
             return HttpResponse(pprint.pformat(form.errors))

@@ -7,7 +7,65 @@ from django.db import models
 from astropy.io import ascii
 
 
-class AsciiFileReportParser:
+class ExoReportComposite:
+    def __init__(self):
+        self.ExoplanetExoObservation = ExoplanetExoObservation
+        pass
+
+    def get(self, model_name):
+        return self.ExoplanetExoObservation
+
+    def set_model(self, name, value):
+        self.ExoplanetExoObservation = value
+
+    def get_model(self, name):
+        return self.ExoplanetExoObservation
+
+class AsciiReportMapper:
+    def __init__(self, ascii_report, exo_report):
+        self.ascii_report = ascii_report
+        self.exo_report = exo_report
+
+    def get_exo_report(self):
+        return self.exo_report
+
+    def map_from_ascii_report_to_exo_report(self):
+        ar = self.ascii_report
+        er = self.exo_report
+
+        observation = ExoplanetExoObservation
+        observation.exoplanet_name = ar.get_properties()['EXOPLANET_NAME']
+        observation.star_name = ar.get_properties()['STAR_NAME']
+        observation.obscode = ar.get_properties()['OBSCODE']
+        observation.obstype = ar.get_properties()['OBSTYPE']
+        observation.software = ar.get_properties()['SOFTWARE']
+        observation.secondary_stars = ar.get_properties()['SECONDARY_STARS']
+        observation.secondary_obscodes = ar.get_properties()['SECONDARY_OBSCODES']
+        observation.exposure_time = ar.get_properties()['EXPOSURE_TIME']
+        observation.binning = ar.get_properties()['BINNING']
+        observation.filter = ar.get_properties()['FILTER']
+        observation.reference_star_filename = 'Image File Name'
+        observation.notes = ar.get_properties()['NOTES']
+        observation.detrend_name_1 = ar.get_properties()['DETREND_PARAMETERS']
+        observation.detrend_name_2 = ar.get_properties()['DETREND_PARAMETERS']
+        observation.detrend_name_3 = ar.get_properties()['DETREND_PARAMETERS']
+        observation.detrend_name_4 = ar.get_properties()['DETREND_PARAMETERS']
+        observation.priors = ar.get_properties()['PRIORS']
+        observation.results = ar.get_properties()['RESULTS']
+        observation.valflag = 'U'
+        observation.group = ar.get_properties()['GROUP']
+        observation.added_date = '2457393.50247'
+        observation.web_djanjo_hq_person_site = '1'
+        observation.web_django_hq_person_equipment = '1'
+        observation.exoplanet_names = '1'
+
+        er.set_model(observation.__class__.__name__, observation)
+
+    class Meta:
+        managed = False
+
+
+class AsciiReport:
     def __init__(self, raw_report):
         self.ascii_report = self._convert_to_ascii_table(raw_report)
         self.properties = self._extract_properties_from_report()
@@ -32,6 +90,9 @@ class AsciiFileReportParser:
     def _extract_headers_from_reports(self):
         report_headers = self.ascii_report.meta['comments'][-1].split()
         return report_headers
+
+    class Meta:
+        managed = False
 
 
 class Report(models.Model):
